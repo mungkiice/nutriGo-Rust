@@ -100,3 +100,125 @@ impl Default for Config {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod database_config {
+        use super::*;
+
+        #[test]
+        fn connection_string_format_is_correct() {
+            let config = DatabaseConfig {
+                host: "localhost".to_string(),
+                port: 5432,
+                username: "user".to_string(),
+                password: "pass".to_string(),
+                database: "testdb".to_string(),
+                max_connections: 5,
+            };
+
+            let expected = "postgres://user:pass@localhost:5432/testdb";
+            assert_eq!(config.connection_string(), expected);
+        }
+
+        #[test]
+        fn connection_string_with_special_characters() {
+            let config = DatabaseConfig {
+                host: "db.example.com".to_string(),
+                port: 5433,
+                username: "admin_user".to_string(),
+                password: "p@ssw0rd".to_string(),
+                database: "production_db".to_string(),
+                max_connections: 10,
+            };
+
+            assert!(config.connection_string().contains("admin_user"));
+            assert!(config.connection_string().contains("db.example.com"));
+            assert!(config.connection_string().contains("5433"));
+        }
+    }
+
+    mod server_config {
+        use super::*;
+
+        #[test]
+        fn can_create_server_config() {
+            let config = ServerConfig {
+                host: "0.0.0.0".to_string(),
+                port: 8080,
+            };
+
+            assert_eq!(config.host, "0.0.0.0");
+            assert_eq!(config.port, 8080);
+        }
+
+        #[test]
+        fn supports_various_hosts() {
+            let hosts = vec!["127.0.0.1", "0.0.0.0", "localhost", "example.com"];
+            for host in hosts {
+                let config = ServerConfig {
+                    host: host.to_string(),
+                    port: 8080,
+                };
+                assert_eq!(config.host, host);
+            }
+        }
+    }
+
+    mod logging_config {
+        use super::*;
+
+        #[test]
+        fn can_create_logging_config() {
+            let config = LoggingConfig {
+                level: "info".to_string(),
+                file_path: "logs/app.log".to_string(),
+            };
+
+            assert_eq!(config.level, "info");
+            assert_eq!(config.file_path, "logs/app.log");
+        }
+
+        #[test]
+        fn supports_various_log_levels() {
+            let levels = vec!["trace", "debug", "info", "warn", "error"];
+            for level in levels {
+                let config = LoggingConfig {
+                    level: level.to_string(),
+                    file_path: "logs/app.log".to_string(),
+                };
+                assert_eq!(config.level, level);
+            }
+        }
+    }
+
+    mod config_default {
+        use super::*;
+
+        #[test]
+        fn default_server_config() {
+            let config = Config::default();
+            assert_eq!(config.server.host, "127.0.0.1");
+            assert_eq!(config.server.port, 8080);
+        }
+
+        #[test]
+        fn default_database_config() {
+            let config = Config::default();
+            assert_eq!(config.database.host, "localhost");
+            assert_eq!(config.database.port, 5432);
+            assert_eq!(config.database.username, "nutrigo_rust_user");
+            assert_eq!(config.database.database, "nutrigo_rust");
+            assert_eq!(config.database.max_connections, 5);
+        }
+
+        #[test]
+        fn default_logging_config() {
+            let config = Config::default();
+            assert_eq!(config.logging.level, "debug");
+            assert_eq!(config.logging.file_path, "logs/app.log");
+        }
+    }
+}

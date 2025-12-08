@@ -1,0 +1,17 @@
+[package]
+name = "nutriGo-Rust"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+actix-web = "4.12.1"
+serde = "1.0.228"
+thiserror = "2.0.17"
+sqlx = { version = "0.8", features = [ "runtime-tokio", "postgres" ] }
+log = "0.4"
+env_logger = "0.11"
+fern = { version = "0.6", features = ["colored"] }
+chrono = "0.4"
+
+[build-dependencies]
+sqlx-cli = "0.8"

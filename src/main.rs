@@ -1,16 +1,10 @@
 use actix_web::{App, HttpServer};
-mod routes;
-mod db;
-mod services;
-mod repositories;
-mod models;
-mod handlers;
-mod errors;
-mod config;
-
-use db::postgres::init_pg_pool;
-use services::AppServices;
-use config::Config;
+use nutriGo_Rust::{
+    config::Config,
+    db::postgres::init_pg_pool,
+    routes::configure,
+    services::AppServices,
+};
 use std::fs;
 
 fn setup_logger(log_file: &str) -> Result<(), fern::InitError> {
@@ -61,7 +55,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(actix_web::web::Data::new(AppServices::new(pool.clone())))
-            .configure(routes::configure)
+            .configure(configure)
     })
     .bind(&addr)?
     .run()
